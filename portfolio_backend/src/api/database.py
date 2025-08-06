@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL is not set. Please provide a valid value in your environment or .env file. "
+        "See .env.example for guidance."
+    )
 
 engine = create_engine(DATABASE_URL, connect_args={})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
