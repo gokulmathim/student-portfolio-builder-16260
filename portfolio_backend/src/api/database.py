@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError(
@@ -13,9 +15,17 @@ if not DATABASE_URL:
         "See .env.example for guidance."
     )
 
-engine = create_engine(DATABASE_URL, connect_args={})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+try:
+    engine = create_engine(DATABASE_URL, connect_args={})
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base = declarative_base()
+except Exception:
+    # Print traceback for DB connection errors
+    import sys, traceback
+    print("FATAL ERROR: Could not connect to database with DATABASE_URL='%s'" % DATABASE_URL, file=sys.stderr)
+    traceback.print_exc()
+    logging.error("Could not connect to database at startup!", exc_info=True)
+    raise
 
 portfolio_projects_table = Table(
     "portfolio_projects",

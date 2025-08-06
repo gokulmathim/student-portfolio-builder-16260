@@ -45,9 +45,19 @@ app.add_middleware(
 )
 
 
+import logging
+
 @app.on_event("startup")
 def startup():
-    create_tables()
+    try:
+        create_tables()
+    except Exception:
+        # Print traceback to standard error and log explicitly
+        import traceback, sys
+        print("FATAL ERROR during startup - could not initialize database!", file=sys.stderr)
+        traceback.print_exc()
+        logging.error("FATAL ERROR during FastAPI startup - could not initialize database.", exc_info=True)
+        raise
 
 
 @app.get("/", tags=["health"])
